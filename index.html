@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Marriage — Interactive Lesson (Pupil)</title>
+  <style>
+    :root{
+      --bg1:#0ea5e9;
+      --bg2:#a78bfa;
+      --bg3:#22c55e;
+      --bg4:#f97316;
+      --ink:#0b1220;
+      --card:#ffffff;
+      --muted:rgba(11,18,32,.65);
+      --shadow: 0 12px 30px rgba(0,0,0,.18);
+      --r: 22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--ink);
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,.25), transparent 60%),
+                  linear-gradient(120deg, var(--bg1), var(--bg2) 45%, var(--bg3) 90%);
+      min-height:100vh;
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,.12);
+      border-bottom: 1px solid rgba(255,255,255,.2);
+      padding: 12px 16px;
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+    }
+    .brand{display:flex; gap:10px; align-items:center}
+    .logo{
+      width:38px; height:38px; border-radius:14px;
+      background: conic-gradient(from 210deg, #fff, rgba(255,255,255,.2), #fff);
+      display:grid; place-items:center;
+      box-shadow: var(--shadow);
+      font-weight:900;
+    }
+    .pill{
+      border:1px solid rgba(255,255,255,.35);
+      background: rgba(255,255,255,.16);
+      padding:6px 10px; border-radius:999px;
+      font-size:.9rem;
+      display:flex; gap:8px; align-items:center;
+      color:white;
+    }
+    .controls{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    button{
+      border:0; border-radius:999px; padding:10px 12px;
+      background: rgba(255,255,255,.95);
+      color: var(--ink);
+      font-weight:800;
+      cursor:pointer;
+      box-shadow: 0 10px 20px rgba(0,0,0,.15);
+      transition: transform .08s ease;
+    }
+    button:active{transform: translateY(1px) scale(.99)}
+    button.ghost{
+      background: rgba(255,255,255,.16);
+      color:white;
+      border:1px solid rgba(255,255,255,.3);
+      box-shadow:none;
+      font-weight:800;
+    }
+
+    main{
+      padding: 18px 16px 26px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      max-width: 1050px;
+      margin: 0 auto;
+    }
+    .card{
+      background: rgba(255,255,255,.92);
+      border:1px solid rgba(255,255,255,.35);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+    .slideTop{
+      display:flex; gap:12px; align-items:flex-start; justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .h1{font-size:1.65rem; margin:0}
+    .sub{color:var(--muted); margin-top:6px; line-height:1.35}
+    .badge{
+      padding:6px 10px; border-radius:999px;
+      font-size:.85rem; font-weight:900;
+      background: rgba(11,18,32,.08);
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+    }
+    .progress{
+      height:10px; border-radius:999px;
+      background: rgba(11,18,32,.12);
+      overflow:hidden;
+      margin-top:10px;
+    }
+    .bar{
+      height:100%; width:0%;
+      background: linear-gradient(90deg, var(--bg4), #facc15, var(--bg3));
+      transition: width .25s ease;
+    }
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width: 520px){ .grid2{grid-template-columns:1fr} }
+
+    .reveal{
+      background: rgba(14,165,233,.10);
+      border:1px dashed rgba(14,165,233,.45);
+      border-radius: 18px;
+      padding:12px;
+    }
+    .reveal strong{display:block; margin-bottom:6px}
+    .hint{color:var(--muted); font-size:.95rem}
+    .quiz{margin-top:12px; display:grid; gap:10px;}
+    .q{
+      padding:12px; border-radius: 18px;
+      background: rgba(255,255,255,.75);
+      border:1px solid rgba(11,18,32,.10);
+    }
+    .qTitle{font-weight:950; margin-bottom:8px}
+    .opts{display:grid; gap:8px}
+    .opt{
+      text-align:left;
+      padding:10px 12px;
+      border-radius: 16px;
+      background: white;
+      border:1px solid rgba(11,18,32,.12);
+      box-shadow: 0 8px 18px rgba(0,0,0,.08);
+      font-weight:850;
+    }
+    .opt.correct{outline: 3px solid rgba(34,197,94,.55)}
+    .opt.wrong{outline: 3px solid rgba(239,68,68,.55)}
+    .stats{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .stat{
+      padding:6px 10px; border-radius:999px;
+      background: rgba(11,18,32,.08);
+      font-weight:900;
+    }
+    .warn{
+      padding:12px;
+      border-radius:18px;
+      background: rgba(249,115,22,.14);
+      border:1px solid rgba(249,115,22,.45);
+    }
+
+    /* Sorting activity */
+    .bins{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:12px}
+    @media (max-width: 720px){ .bins{grid-template-columns:1fr} }
+    .bin{
+      min-height:110px;
+      padding:10px;
+      border-radius:18px;
+      background: rgba(255,255,255,.7);
+      border:1px dashed rgba(11,18,32,.25);
+    }
+    .bin h4{margin:0 0 6px 0}
+    .chips{display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      padding:8px 10px;
+      border-radius:999px;
+      background:white;
+      border:1px solid rgba(11,18,32,.12);
+      cursor:grab;
+      user-select:none;
+      font-weight:900;
+    }
+    .chip.dragging{opacity:.55}
+
+    footer{max-width:1050px; margin:0 auto; padding:0 16px 18px; color:rgba(255,255,255,.9)}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">◎</div>
+    <div>
+      <div style="font-weight:950; color:white; line-height:1.1">Marriage — Interactive Lesson</div>
+      <div style="color:rgba(255,255,255,.85); font-size:.9rem">Pupil version • Interactive activities</div>
+    </div>
+  </div>
+  <div class="controls">
+    <span class="pill" id="pillSlide">Slide 1/1</span>
+    <span class="pill">🔥 Streak: <span id="streak">0</span></span>
+    <button id="prev">← Prev</button>
+    <button id="next">Next →</button>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="slideTop">
+      <div>
+        <div class="badge" id="tag"></div>
+        <h1 class="h1" id="title"></h1>
+        <div class="sub" id="subtitle"></div>
+      </div>
+      <div style="text-align:right">
+        <div class="hint">Points</div>
+        <div style="font-size:1.25rem; font-weight:950;"><span id="score">0</span>/<span id="total">0</span></div>
+      </div>
+    </div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+
+    <div class="stats">
+      <div class="stat">Accuracy: <span id="accuracy">—</span></div>
+      <div class="stat">Try your best • no stress</div>
+    </div>
+
+    <div style="margin-top:12px" id="content"></div>
+  </section>
+</main>
+
+<footer>
+  <div>Tip: You can change your mind on the discussion slide — practise thinking, not perfection.</div>
+</footer>
+
+<script>
+  // Edit lesson text/questions here.
+  const slides = [
+    {
+      tag: "Start",
+      title: "Ground rules for respectful discussion",
+      subtitle: "Tap each rule to reveal why it matters. Then hit ‘Next’.",
+      type: "revealList",
+      items: [
+        { t:"We speak respectfully", d:"We can disagree with ideas, not people." },
+        { t:"We don’t share personal stories", d:"Keep examples general to protect privacy." },
+        { t:"We listen without interrupting", d:"Everyone gets a chance to contribute." },
+        { t:"If something worries you, tell a trusted adult", d:"A teacher can help you get support." }
+      ]
+    },
+    {
+      tag: "Key idea",
+      title: "What is marriage?",
+      subtitle: "Reveal a definition, then answer the quick quiz.",
+      type: "reveal+quiz",
+      reveal: {
+        head: "Tap to reveal a definition",
+        body: "Marriage is a legally recognised relationship between two people, often with social and cultural meaning."
+      },
+      quiz: [
+        {
+          q: "Which is the best starter definition for marriage?",
+          opts: [
+            "A party people have",
+            "A legally recognised commitment between two people",
+            "A relationship only for having children"
+          ],
+          answer: 1
+        },
+        {
+          q: "Marriage can have…",
+          opts: [
+            "Only legal meaning",
+            "Only religious meaning",
+            "Legal meaning and social/cultural meaning"
+          ],
+          answer: 2
+        }
+      ]
+    },
+    {
+      tag: "Activity",
+      title: "Why might people get married?",
+      subtitle: "Drag each reason into the best category: Legal / Social / Emotional.",
+      type: "sort",
+      chips: [
+        { text:"Legal rights", cat:"Legal" },
+        { text:"Love", cat:"Emotional" },
+        { text:"Security", cat:"Emotional" },
+        { text:"Tradition", cat:"Social" },
+        { text:"Religion", cat:"Social" },
+        { text:"Financial reasons", cat:"Legal" },
+        { text:"Family expectations", cat:"Social" },
+        { text:"Commitment", cat:"Emotional" }
+      ],
+      bins: ["Legal","Social","Emotional"]
+    },
+    {
+      tag: "Check",
+      title: "Who can get married? (law basics)",
+      subtitle: "Quick true/false.",
+      type: "quiz",
+      quiz: [
+        { q: "Consent is required for marriage.", opts: ["True","False"], answer: 0 },
+        { q: "Age requirements exist for marriage.", opts: ["True","False"], answer: 0 }
+      ]
+    },
+    {
+      tag: "Compare",
+      title: "Civil partnership",
+      subtitle: "Pick the best answer for each question.",
+      type: "quiz",
+      quiz: [
+        {
+          q: "A civil partnership is best described as…",
+          opts: [
+            "A friendship agreement",
+            "A legal relationship with rights/responsibilities similar to marriage",
+            "A religious ceremony"
+          ],
+          answer: 1
+        },
+        {
+          q: "Which is most accurate?",
+          opts: [
+            "Civil partnerships always have identical ceremonies to marriage",
+            "Civil partnerships and marriage can differ in process/terminology, even if many rights overlap",
+            "Civil partnerships have no legal impact"
+          ],
+          answer: 1
+        }
+      ]
+    },
+    {
+      tag: "Safeguarding",
+      title: "Arranged vs forced marriage",
+      subtitle: "Choose the safest/most accurate option in each scenario.",
+      type: "quiz+warning",
+      warning: "Keep examples general. If you’re worried about someone’s safety, speak to a trusted adult.",
+      quiz: [
+        {
+          q: "Arranged marriage means…",
+          opts: [
+            "Families introduce people, but both individuals consent",
+            "One person is pressured and cannot say no",
+            "It is always illegal"
+          ],
+          answer: 0
+        },
+        {
+          q: "If someone says they cannot refuse, the safest next step is…",
+          opts: [
+            "Ignore it — it’s private",
+            "Encourage them to seek help from a trusted adult",
+            "Tell them to just go along with it"
+          ],
+          answer: 1
+        }
+      ]
+    },
+    {
+      tag: "Impact",
+      title: "Divorce & children",
+      subtitle: "Quick check: impacts and support.",
+      type: "quiz",
+      quiz: [
+        { q: "Divorce can affect children in different ways.", opts: ["True","False"], answer: 0 },
+        {
+          q: "A helpful adult response is…",
+          opts: [
+            "Blame one parent",
+            "Keep routines/support and listen",
+            "Tell children not to feel anything"
+          ],
+          answer: 1
+        }
+      ]
+    },
+    {
+      tag: "Finish",
+      title: "Big question: Is marriage always the right path?",
+      subtitle: "Pick a stance, then prepare one reason and one counterargument.",
+      type: "stance",
+      stances: ["Yes (often)","Sometimes","Not necessarily"]
+    }
+  ];
+
+  let i = 0;
+  let score = 0;
+  let total = 0;
+  let streak = 0;
+
+  const el = (id)=>document.getElementById(id);
+
+  function calcTotal(){
+    total = slides.reduce((acc,sl)=> acc + (sl.quiz ? sl.quiz.length : 0), 0);
+    el("total").textContent = total;
+    el("score").textContent = score;
+    el("accuracy").textContent = total ? `${Math.round((score/total)*100)}%` : "—";
+  }
+
+  function render(){
+    const s = slides[i];
+    el("pillSlide").innerHTML = `Slide ${i+1}/${slides.length}`;
+    el("tag").textContent = s.tag;
+    el("title").textContent = s.title;
+    el("subtitle").textContent = s.subtitle;
+    el("streak").textContent = streak;
+
+    el("bar").style.width = `${Math.round(((i+1)/slides.length)*100)}%`;
+
+    const content = el("content");
+    content.innerHTML = "";
+
+    calcTotal();
+
+    if(s.type === "revealList"){
+      const box = document.createElement("div");
+      box.className = "grid2";
+      s.items.forEach((it, idx)=>{
+        const r = document.createElement("div");
+        r.className = "reveal";
+        r.innerHTML = `<strong>✨ ${it.t}</strong><div class="hint" id="rv${idx}" style="display:none">${it.d}</div>
+          <button style="margin-top:8px" onclick="toggleRv(${idx})">Reveal / Hide</button>`;
+        box.appendChild(r);
+      });
+      content.appendChild(box);
+      window.toggleRv = (idx)=>{
+        const x = document.getElementById("rv"+idx);
+        x.style.display = (x.style.display === "none") ? "block" : "none";
+      }
+    }
+
+    if(s.type === "reveal+quiz"){
+      const r = document.createElement("div");
+      r.className = "reveal";
+      r.innerHTML = `<strong>📌 ${s.reveal.head}</strong>
+        <div class="hint" id="def" style="display:none">${s.reveal.body}</div>
+        <button style="margin-top:8px" onclick="toggleDef()">Reveal / Hide</button>`;
+      content.appendChild(r);
+      window.toggleDef = ()=>{
+        const d = document.getElementById("def");
+        d.style.display = (d.style.display === "none") ? "block" : "none";
+      };
+      content.appendChild(renderQuiz(s.quiz));
+    }
+
+    if(s.type === "quiz"){
+      content.appendChild(renderQuiz(s.quiz));
+    }
+
+    if(s.type === "quiz+warning"){
+      const w = document.createElement("div");
+      w.className = "warn";
+      w.innerHTML = `<div style="font-weight:950;margin-bottom:6px">🧡 Safety note</div><div class="hint">${s.warning}</div>`;
+      content.appendChild(w);
+      content.appendChild(renderQuiz(s.quiz));
+    }
+
+    if(s.type === "sort"){
+      const info = document.createElement("div");
+      info.className = "reveal";
+      info.innerHTML = `<strong>🧩 Drag & sort</strong><div class="hint">Drag each reason into the best bin.</div>`;
+      content.appendChild(info);
+
+      const chipWrap = document.createElement("div");
+      chipWrap.className = "chips";
+      chipWrap.id = "chipWrap";
+
+      // Shuffle chips for pupils
+      const shuffled = [...s.chips].map((x,idx)=>({ ...x, _idx: idx }))
+        .sort(()=>Math.random()-0.5);
+
+      shuffled.forEach((c, idx)=>{
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.draggable = true;
+        chip.dataset.cat = c.cat;
+        chip.dataset.key = c.text;
+        chip.textContent = c.text;
+        chip.addEventListener("dragstart", (e)=>{ chip.classList.add("dragging"); e.dataTransfer.setData("text/plain", c.text); });
+        chip.addEventListener("dragend", ()=> chip.classList.remove("dragging"));
+        chipWrap.appendChild(chip);
+      });
+
+      content.appendChild(chipWrap);
+
+      const bins = document.createElement("div");
+      bins.className = "bins";
+      s.bins.forEach(binName=>{
+        const b = document.createElement("div");
+        b.className = "bin";
+        b.dataset.bin = binName;
+        b.innerHTML = `<h4>📦 ${binName}</h4><div class="chips" id="bin_${binName}"></div>`;
+        b.addEventListener("dragover", (e)=> e.preventDefault());
+        b.addEventListener("drop", (e)=>{
+          e.preventDefault();
+          const text = e.dataTransfer.getData("text/plain");
+          const chip = [...document.querySelectorAll(".chip")].find(x=>x.textContent===text);
+          if(chip) document.getElementById(`bin_${binName}`).appendChild(chip);
+          checkSort();
+        });
+        bins.appendChild(b);
+      });
+      content.appendChild(bins);
+
+      const result = document.createElement("div");
+      result.id = "sortResult";
+      result.className = "hint";
+      result.style.marginTop = "10px";
+      result.textContent = "Sorted: 0/" + s.chips.length;
+      content.appendChild(result);
+
+      function checkSort(){
+        let placed = 0;
+        s.bins.forEach(binName=>{
+          const container = document.getElementById(`bin_${binName}`);
+          placed += container.querySelectorAll(".chip").length;
+        });
+        document.getElementById("sortResult").textContent = `Sorted: ${placed}/${s.chips.length}`;
+      }
+      checkSort();
+    }
+
+    if(s.type === "stance"){
+      const box = document.createElement("div");
+      box.className = "quiz";
+      const q = document.createElement("div");
+      q.className = "q";
+      q.innerHTML = `<div class="qTitle">Pick a stance</div><div class="hint">Then think of one reason and one counterargument.</div>`;
+      const opts = document.createElement("div");
+      opts.className = "opts";
+      s.stances.forEach((st)=>{
+        const b = document.createElement("button");
+        b.className = "opt";
+        b.textContent = st;
+        b.onclick = ()=>{
+          [...opts.querySelectorAll(".opt")].forEach(x=>x.classList.remove("correct"));
+          b.classList.add("correct");
+          streak++;
+          el("streak").textContent = streak;
+        };
+        opts.appendChild(b);
+      });
+      q.appendChild(opts);
+      box.appendChild(q);
+      content.appendChild(box);
+    }
+  }
+
+  function renderQuiz(quiz){
+    const wrap = document.createElement("div");
+    wrap.className = "quiz";
+    quiz.forEach((qq)=>{
+      const q = document.createElement("div");
+      q.className = "q";
+      q.innerHTML = `<div class="qTitle">❓ ${qq.q}</div>`;
+      const opts = document.createElement("div");
+      opts.className = "opts";
+      qq.opts.forEach((o, oi)=>{
+        const b = document.createElement("button");
+        b.className = "opt";
+        b.textContent = o;
+        b.onclick = ()=>{
+          if(q.dataset.answered) return;
+          q.dataset.answered = "1";
+
+          const correct = (oi === qq.answer);
+          if(correct){
+            b.classList.add("correct");
+            score++;
+            streak++;
+          } else {
+            b.classList.add("wrong");
+            streak = 0;
+          }
+          el("score").textContent = score;
+          el("accuracy").textContent = total ? `${Math.round((score/total)*100)}%` : "—";
+          el("streak").textContent = streak;
+        };
+        opts.appendChild(b);
+      });
+      q.appendChild(opts);
+      wrap.appendChild(q);
+    });
+    return wrap;
+  }
+
+  el("prev").onclick = ()=>{ i = Math.max(0, i-1); render(); };
+  el("next").onclick = ()=>{ i = Math.min(slides.length-1, i+1); render(); };
+
+  render();
+</script>
+</body>
+</html>
