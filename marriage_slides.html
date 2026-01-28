@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Marriage — Colourful Interactive Deck</title>
+  <style>
+    :root{
+      --bg1:#0ea5e9;
+      --bg2:#a78bfa;
+      --bg3:#22c55e;
+      --bg4:#f97316;
+      --bg5:#ef4444;
+      --ink:#0b1220;
+      --muted:rgba(11,18,32,.65);
+      --card:rgba(255,255,255,.92);
+      --shadow: 0 14px 40px rgba(0,0,0,.18);
+      --r: 22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,.22), transparent 60%),
+        radial-gradient(1000px 700px at 90% 20%, rgba(255,255,255,.18), transparent 55%),
+        linear-gradient(120deg, var(--bg1), var(--bg2) 45%, var(--bg3) 90%);
+      min-height:100vh;
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,.12);
+      border-bottom: 1px solid rgba(255,255,255,.2);
+      padding: 12px 16px;
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+    }
+    .brand{display:flex; gap:10px; align-items:center}
+    .logo{
+      width:38px; height:38px; border-radius:14px;
+      background: conic-gradient(from 210deg, #fff, rgba(255,255,255,.2), #fff);
+      display:grid; place-items:center;
+      box-shadow: var(--shadow);
+      font-weight:900;
+    }
+    .pill{
+      border:1px solid rgba(255,255,255,.35);
+      background: rgba(255,255,255,.16);
+      padding:6px 10px; border-radius:999px;
+      font-size:.9rem;
+      display:flex; gap:8px; align-items:center;
+      color:white;
+      white-space:nowrap;
+    }
+    .controls{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+    button{
+      border:0; border-radius:999px; padding:10px 12px;
+      background: rgba(255,255,255,.95);
+      color: var(--ink);
+      font-weight:800;
+      cursor:pointer;
+      box-shadow: 0 10px 20px rgba(0,0,0,.15);
+      transition: transform .08s ease, filter .15s ease;
+    }
+    button:active{transform: translateY(1px) scale(.99)}
+    button:hover{filter: brightness(.98)}
+    button.ghost{
+      background: rgba(255,255,255,.16);
+      color:white;
+      border:1px solid rgba(255,255,255,.3);
+      box-shadow:none;
+    }
+    main{
+      padding: 18px 16px 26px;
+      display:grid;
+      grid-template-columns: 1.3fr .7fr;
+      gap: 14px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    @media (max-width: 920px){ main{grid-template-columns:1fr} }
+
+    .card{
+      background: var(--card);
+      border:1px solid rgba(255,255,255,.35);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+    .slideTop{
+      display:flex; gap:12px; align-items:flex-start; justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .badge{
+      padding:6px 10px; border-radius:999px;
+      font-size:.85rem; font-weight:900;
+      background: rgba(11,18,32,.08);
+      display:inline-flex; gap:8px; align-items:center;
+    }
+    .h1{font-size:1.7rem; margin:0}
+    .sub{color:var(--muted); margin-top:6px; line-height:1.35}
+    .progress{
+      height:10px; border-radius:999px;
+      background: rgba(11,18,32,.12);
+      overflow:hidden;
+      margin-top:10px;
+    }
+    .bar{
+      height:100%; width:0%;
+      background: linear-gradient(90deg, var(--bg4), #facc15, var(--bg3));
+      transition: width .25s ease;
+    }
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width: 520px){ .grid2{grid-template-columns:1fr} }
+
+    .panel{
+      border-radius:18px;
+      padding:12px;
+      border:1px solid rgba(11,18,32,.12);
+      background: rgba(255,255,255,.75);
+    }
+    .panel strong{display:block; margin-bottom:6px}
+    .hint{color:var(--muted); font-size:.95rem; line-height:1.35}
+    .reveal{
+      background: rgba(14,165,233,.10);
+      border:1px dashed rgba(14,165,233,.45);
+      border-radius: 18px;
+      padding:12px;
+    }
+    .reveal strong{display:block; margin-bottom:6px}
+    .list{margin:8px 0 0 18px; color:rgba(11,18,32,.82)}
+    .list li{margin:6px 0}
+
+    .quiz{ margin-top:12px; display:grid; gap:10px; }
+    .q{
+      padding:12px; border-radius: 18px;
+      background: rgba(255,255,255,.75);
+      border:1px solid rgba(11,18,32,.10);
+    }
+    .qTitle{font-weight:900; margin-bottom:8px}
+    .opts{display:grid; gap:8px}
+    .opt{
+      text-align:left;
+      padding:10px 12px;
+      border-radius: 16px;
+      background: white;
+      border:1px solid rgba(11,18,32,.12);
+      box-shadow: 0 8px 18px rgba(0,0,0,.08);
+      font-weight:800;
+      cursor:pointer;
+    }
+    .opt.correct{outline: 3px solid rgba(34,197,94,.55)}
+    .opt.wrong{outline: 3px solid rgba(239,68,68,.55)}
+    .feedback{
+      margin-top:10px;
+      border-radius:16px;
+      padding:10px 12px;
+      background: rgba(167,139,250,.12);
+      border:1px solid rgba(167,139,250,.30);
+      display:none;
+    }
+    .feedback.show{display:block}
+    .feedback .label{font-weight:900; margin-bottom:4px}
+    .feedback .text{color:rgba(11,18,32,.78); line-height:1.35}
+
+    /* Sorting */
+    .bins{display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-top:12px}
+    @media (max-width: 720px){ .bins{grid-template-columns:1fr} }
+    .bin{
+      min-height:120px;
+      padding:10px;
+      border-radius:18px;
+      background: rgba(255,255,255,.7);
+      border:1px dashed rgba(11,18,32,.25);
+    }
+    .bin h4{margin:0 0 6px 0}
+    .chips{display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      padding:8px 10px;
+      border-radius:999px;
+      background:white;
+      border:1px solid rgba(11,18,32,.12);
+      cursor:grab;
+      user-select:none;
+      font-weight:900;
+    }
+    .chip.dragging{opacity:.55}
+
+    /* Scale / ratings */
+    .scaleWrap{
+      margin-top:12px;
+      border-radius:18px;
+      padding:12px;
+      background: rgba(255,255,255,.75);
+      border:1px solid rgba(11,18,32,.10);
+    }
+    .scaleTop{display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap}
+    .scaleLegend{display:flex; gap:8px; flex-wrap:wrap}
+    .tagMini{
+      font-size:.85rem; font-weight:900;
+      padding:4px 8px;
+      border-radius:999px;
+      background: rgba(11,18,32,.08);
+    }
+    .reasonCard{
+      margin-top:10px;
+      border-radius:18px;
+      padding:12px;
+      background:white;
+      border:1px solid rgba(11,18,32,.12);
+      box-shadow: 0 10px 22px rgba(0,0,0,.08);
+    }
+    input[type="range"]{width:100%}
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    select{
+      padding:8px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(11,18,32,.2);
+      background:white;
+      font-weight:800;
+    }
+
+    .warn{
+      padding:12px;
+      border-radius:18px;
+      background: rgba(249,115,22,.14);
+      border:1px solid rgba(249,115,22,.45);
+    }
+    .danger{
+      padding:12px;
+      border-radius:18px;
+      background: rgba(239,68,68,.14);
+      border:1px solid rgba(239,68,68,.45);
+    }
+
+    /* Right sidebar */
+    .sideTitle{font-weight:900; margin:0 0 8px 0}
+    .scoreBox{display:grid; gap:10px;}
+    .stat{
+      display:flex; justify-content:space-between; gap:10px; align-items:center;
+      padding:10px 12px;
+      border-radius: 16px;
+      background: rgba(11,18,32,.06);
+    }
+    .big{font-size:1.2rem; font-weight:900}
+    .small{color:var(--muted); font-size:.9rem}
+
+    footer{max-width:1200px; margin:0 auto; padding:0 16px 18px; color:rgba(255,255,255,.9)}
+    a{color:inherit}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">◎</div>
+    <div>
+      <div style="font-weight:900; color:white; line-height:1.1">Marriage — Colourful Interactive Lesson</div>
+      <div style="color:rgba(255,255,255,.85); font-size:.9rem">Website-style slides • activities • checks for knowledge</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <span class="pill" id="pillSlide">Slide 1/1</span>
+    <span class="pill">✅ Score: <span id="score">0</span>/<span id="total">0</span></span>
+    <button class="ghost" id="reset">Reset</button>
+    <button id="prev">← Prev</button>
+    <button id="next">Next →</button>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="slideTop">
+      <div>
+        <div class="badge" id="tag"></div>
+        <h1 class="h1" id="title"></h1>
+        <div class="sub" id="subtitle"></div>
+      </div>
+      <div style="text-align:right">
+        <div class="small" style="margin-top:2px">Progress</div>
+        <div class="big"><span id="pct">0</span>%</div>
+      </div>
+    </div>
+
+    <div class="progress"><div class="bar" id="bar"></div></div>
+
+    <div style="margin-top:12px" id="content"></div>
+  </section>
+
+  <aside class="card">
+    <h3 class="sideTitle">Teacher quick prompts</h3>
+    <div class="scoreBox">
+      <div class="stat">
+        <div>
+          <div class="big" id="checkpoint">—</div>
+          <div class="small">Current checkpoint</div>
+        </div>
+        <div class="badge" id="tlc">TLC</div>
+      </div>
+
+      <div class="stat">
+        <div>
+          <div class="big" id="hinge">—</div>
+          <div class="small">Hinge question</div>
+        </div>
+        <div class="badge">🎯</div>
+      </div>
+
+      <div class="warn">
+        <div style="font-weight:900; margin-bottom:6px">Safe discussion</div>
+        <div class="small">
+          Keep examples general. Nobody should feel pressured to share anything personal.
+          If a safeguarding concern arises, follow your school’s procedure.
+        </div>
+      </div>
+
+      <div class="panel">
+        <strong>Keyboard shortcuts</strong>
+        <div class="hint">← / → for slides, R to reset score.</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  <div>Edit content in the <strong>slides</strong> array inside this file.</div>
+</footer>
+
+<script>
+  // Colourful deck built from your original PDF flow.
+  // Notes: UK law items are written as classroom hinge checks. If you need local-law precision, adjust wording accordingly.
+
+  const slides = [
+    {
+      tlc: "Start",
+      tag: "Ground Rules",
+      title: "Ground rules for today",
+      subtitle: "Tap each rule to reveal why it matters.",
+      hinge: "Which rule matters most for sensitive topics — and why?",
+      type: "revealList",
+      items: [
+        { t:"Respect rights, beliefs, values and experiences", d:"We can disagree with ideas without judging people." },
+        { t:"Use correct terms (ask if unsure)", d:"Clear, accurate language helps learning and avoids embarrassment." },
+        { t:"Listen to one another", d:"Everyone deserves to be heard." },
+        { t:"Ask questions to help learning", d:"Curiosity is welcome — questions can be anonymous if needed." },
+        { t:"Respect diversity, faith and culture", d:"Different communities may view marriage differently; that’s okay." },
+        { t:"Nobody has to share anything personal", d:"We keep examples general. No pressure to disclose." },
+        { t:"Everyone has the right to an opinion", d:"But we express it respectfully and thoughtfully." },
+        { t:"Take responsibility for what you say/share", d:"Words can affect others — choose them carefully." },
+        { t:"Confidentiality (tell teacher if someone is at risk)", d:"Safety overrides confidentiality: we get help when needed." }
+      ]
+    },
+
+    {
+      tlc: "Intro",
+      tag: "Starter Tasks",
+      title: "Lesson starter",
+      subtitle: "Two quick prompts to get thinking.",
+      hinge: "Do you need marriage for a strong relationship?",
+      type: "panels",
+      panels: [
+        {
+          title: "Character Task: Community Awareness",
+          body: "Community Awareness means actively and meaningfully learning from, and sharing information with different parts of the community. How might that link to a lesson on marriage?"
+        },
+        {
+          title: "SMSC Task (3 mins)",
+          body: "Do you need to be married to be in a happy relationship?"
+        }
+      ]
+    },
+
+    {
+      tlc: "TLC 1",
+      tag: "Key Idea",
+      title: "What is marriage?",
+      subtitle: "Warm-up: write down 3 things you already know. Then reveal a definition.",
+      hinge: "What makes marriage a *legal* commitment?",
+      type: "reveal+mini",
+      reveal: {
+        head: "Tap to reveal a definition",
+        body: "Marriage is the legally or formally recognised union of two people as partners in a personal relationship."
+      },
+      miniPrompt: "Quick write (30s): three facts / ideas you already know about marriage."
+    },
+
+    {
+      tlc: "TLC 2",
+      tag: "Mind Map",
+      title: "Why might people get married?",
+      subtitle: "Drag-sort reasons into Legal / Social / Emotional. (There can be overlaps!)",
+      hinge: "Pick one reason and justify your category choice.",
+      type: "sort",
+      bins: ["Legal","Social","Emotional"],
+      chips: [
+        { text:"To have children", cat:"Emotional" },
+        { text:"Lifelong faithful relationship", cat:"Emotional" },
+        { text:"Love & compassion", cat:"Emotional" },
+        { text:"Family unit / mutual support", cat:"Social" },
+        { text:"Sexual intimacy as expression of love", cat:"Emotional" },
+        { text:"Financial reasons", cat:"Legal" },
+        { text:"Share one last name", cat:"Social" },
+        { text:"Religion / faith recognition", cat:"Social" }
+      ]
+    },
+
+    {
+      tlc: "TLC 3",
+      tag: "Check for knowledge",
+      title: "Who can get married? (UK law hinge checks)",
+      subtitle: "Decide True/False — then read the explanation.",
+      hinge: "Why do strict laws exist — who are they trying to protect?",
+      type: "quiz",
+      quiz: [
+        {
+          q: "The legal age of marriage and civil partnerships is 18 in England and Wales.",
+          opts: ["True","False"],
+          answer: 0,
+          why: "This reflects the current position in England and Wales (changed in 2022)."
+        },
+        {
+          q: "Before 2022, people could get married at 16 or 17 with parental consent.",
+          opts: ["True","False"],
+          answer: 0,
+          why: "Yes — the law changed to raise the minimum age to 18."
+        },
+        {
+          q: "Same sex marriage has been legal in the UK since 2004.",
+          opts: ["True","False"],
+          answer: 1,
+          why: "2004 is associated with civil partnership legislation; same-sex marriage came later (timing varies across the UK)."
+        },
+        {
+          q: "If you don’t consummate a marriage (have sex), the marriage can be cancelled (annulled).",
+          opts: ["True","False"],
+          answer: 0,
+          why: "In some legal contexts, non-consummation can be a ground for annulment (this is sensitive; keep discussion factual and age-appropriate)."
+        },
+        {
+          q: "In the UK, you can get married in a secret ceremony without telling anyone.",
+          opts: ["True","False"],
+          answer: 1,
+          why: "Marriage has legal processes/notice requirements; the law aims to protect people from harm and coercion."
+        }
+      ]
+    },
+
+    {
+      tlc: "TLC 4",
+      tag: "Civil Partnership",
+      title: "What is a civil partnership?",
+      subtitle: "Learn the basics — then answer a quick check.",
+      hinge: "What’s the key difference in how it’s formed/ended?",
+      type: "reveal+quiz",
+      reveal: {
+        head: "Tap to reveal the overview",
+        body:
+          "A civil partnership is a legal union between two people who aren’t related. It carries many similar responsibilities to marriage. In general: civil partnerships are formed by signing a document; marriage is formed by vows. Civil partnerships can end by dissolution; marriage ends by divorce."
+      },
+      quiz: [
+        {
+          q: "Which is most accurate?",
+          opts: [
+            "Civil partnerships are only about religion",
+            "Civil partnerships are a legal status with similar responsibilities to marriage",
+            "Civil partnerships have no legal impact"
+          ],
+          answer: 1,
+          why: "It’s a legal status; the point is recognition and rights/responsibilities."
+        }
+      ]
+    },
+
+    {
+      tlc: "TLC 5",
+      tag: "Reasons Scale",
+      title: "Why do people get married? (0–10 scale)",
+      subtitle: "Rate each reason A–I from 0 (bad) to 10 (good) — then classify it: legal/social/emotional.",
+      hinge: "Which reason is most ‘grey area’ — and why?",
+      type: "scale",
+      reasons: [
+        { id:"A", text:"We love each other and make each other really happy (even though we do argue sometimes!)", classDefault:"Emotional" },
+        { id:"B", text:"We want to have children one day and we both think it’s right to get married first.", classDefault:"Social" },
+        { id:"C", text:"I’ve been planning my wedding since I was a child! Food, decorations, music, guest list, outfits — it’s going to be perfect!", classDefault:"Social" },
+        { id:"D", text:"Marriage is an important part of my religion and I want our relationship to be recognised by our faith community.", classDefault:"Social" },
+        { id:"E", text:"We know we’re going to stay together, so we didn’t see the point of getting married. We’re only doing it now because it’ll make lots of legal things easier if one of us dies.", classDefault:"Legal" },
+        { id:"F", text:"We’ve been together for a long time and everyone is expecting us to get married. We feel like we should probably get on with it!", classDefault:"Social" },
+        { id:"G", text:"My family have found someone they think would be a great match for me. I’ve thought it over and I’m nervous, but also excited!", classDefault:"Social" },
+        { id:"H", text:"My parents say I must marry and they’ve given me lots of good reasons why. I don’t want to let them down, but I’m really not sure about it all.", classDefault:"Social" },
+        { id:"I", text:"All our friends are getting married — we’re getting left behind! I don’t know if we’re completely perfect for each other but if it doesn’t work out, we can always get divorced!", classDefault:"Social" }
+      ]
+    },
+
+    {
+      tlc: "TLC 6",
+      tag: "Safeguarding",
+      title: "Arranged vs forced marriage",
+      subtitle: "Know the difference: consent is the key. Do the scenario check.",
+      hinge: "What word separates arranged from forced? (Answer: consent.)",
+      type: "quiz+alerts",
+      alerts: [
+        { kind:"warn", title:"Reminder", body:"Getting married should always be your choice — and you’re allowed to change your mind." },
+        { kind:"danger", title:"Important", body:"Forcing someone to get married is illegal in the UK. If someone may be at risk, seek help straight away (school safeguarding lead)." }
+      ],
+      quiz: [
+        {
+          q: "Arranging a marriage (when both partners consent) is…",
+          opts: ["Legal","Illegal"],
+          answer: 0,
+          why: "Arranged marriage can be legal when both people freely consent."
+        },
+        {
+          q: "Forced marriage is…",
+          opts: ["Legal","Illegal"],
+          answer: 1,
+          why: "Forced marriage removes consent and is a safeguarding concern and illegal."
+        },
+        {
+          q: "If someone says they can’t say no, the safest next step is…",
+          opts: [
+            "Keep it secret and ignore it",
+            "Encourage them to seek help from a trusted adult / safeguarding lead",
+            "Tell them to just comply"
+          ],
+          answer: 1,
+          why: "In school: follow safeguarding procedures. Don’t investigate in class; get the right help."
+        }
+      ]
+    },
+
+    {
+      tlc: "TLC 7",
+      tag: "Weddings",
+      title: "Weddings & marriage celebrations",
+      subtitle: "Spot similarities and differences across different weddings/marriages.",
+      hinge: "Which parts are cultural, and which parts are legal?",
+      type: "prompts",
+      prompts: [
+        "What similarities do you notice across different weddings/marriages?",
+        "What differences do you notice (clothing, location, rituals, guests, music, language, etc.)?",
+        "Which parts are about culture/tradition, and which parts are about legal recognition?"
+      ]
+    },
+
+    {
+      tlc: "TLC 8",
+      tag: "Marriage breakdown",
+      title: "Marriage breakdown (facts & stats prompt)",
+      subtitle: "Use this as a discussion starter — keep it sensitive and general.",
+      hinge: "Why might divorce rates shift over time?",
+      type: "panels",
+      panels: [
+        {
+          title: "Fact from the slide",
+          body: "In 1911, there were just 859 divorce applications. Divorce rates can change over time for many reasons."
+        },
+        {
+          title: "Think",
+          body: "Why might fewer marriages lead to a fall in the divorce rate? What other explanations could there be?"
+        }
+      ]
+    },
+
+    {
+      tlc: "TLC 9",
+      tag: "Marriage & children",
+      title: "Divorce/separation and young people",
+      subtitle: "Discussion questions + a short knowledge check about sensitive discussion.",
+      hinge: "What helps children/young people feel secure during change?",
+      type: "reveal+quiz",
+      reveal: {
+        head: "Sensitivity reminder (tap)",
+        body: "This can be upsetting for some people. You don’t know everyone’s situation, so speak maturely and sensitively. Also: not all marriages/civil partnerships want children."
+      },
+      quiz: [
+        {
+          q: "When discussing divorce, we should…",
+          opts: ["Make it personal and ask for real examples", "Speak generally and sensitively"],
+          answer: 1,
+          why: "Keep it general; avoid personal disclosure and judgement."
+        }
+      ]
+    },
+
+    {
+      tlc: "TLC 10",
+      tag: "Children’s rights",
+      title: "Children’s rights (under 18)",
+      subtitle: "Tap to reveal the list, then choose the best summary.",
+      hinge: "Which right protects safety most directly?",
+      type: "reveal+quiz",
+      reveal: {
+        head: "Tap to reveal: children’s rights list",
+        body:
+          "• Be physically safe and adequately supervised when in the care of each parent.\n" +
+          "• A stable, consistent, and responsible care arrangement when not supervised by parents.\n" +
+          "• Maintain meaningful relationships with significant adults (where safe and appropriate).\n" +
+          "• Expect both parents to follow through on agreed plans/commitments.\n" +
+          "• Parents being informed about medical, dental, educational, extracurricular and legal matters (unless harmful)."
+      },
+      quiz: [
+        {
+          q: "Best summary of these rights is…",
+          opts: [
+            "Children should always decide everything",
+            "Children should be safe, supported, and have stable care and relationships",
+            "Children shouldn’t have relationships outside their parents"
+          ],
+          answer: 1,
+          why: "The list centres on safety, stability, and appropriate supportive relationships."
+        }
+      ]
+    },
+
+    {
+      tlc: "Finish",
+      tag: "Big question",
+      title: "Is marriage always the right path?",
+      subtitle: "Pair discussion prompts (keep it respectful and non-judgemental).",
+      hinge: "Why is it not good to ask someone why they aren’t getting married?",
+      type: "prompts",
+      prompts: [
+        "What are your current thoughts on marriage/civil partnerships? Is it always needed?",
+        "Why is it not good to ask someone why they aren’t getting married?"
+      ]
+    }
+  ];
+
+  let idx = 0;
+  let score = 0;
+
+  const el = (id)=>document.getElementById(id);
+  const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+
+  function computeTotal(){
+    return slides.reduce((acc,s)=> acc + (s.quiz ? s.quiz.length : 0), 0);
+  }
+
+  function render(){
+    const s = slides[idx];
+    const total = computeTotal();
+    el("total").textContent = total;
+    el("score").textContent = score;
+
+    el("pillSlide").innerHTML = `Slide ${idx+1}/${slides.length}`;
+    el("tag").textContent = `${s.tag}`;
+    el("title").textContent = s.title;
+    el("subtitle").textContent = s.subtitle;
+    el("checkpoint").textContent = s.tag;
+    el("tlc").textContent = s.tlc;
+    el("hinge").textContent = s.hinge || "—";
+
+    const pct = Math.round(((idx+1)/slides.length)*100);
+    el("pct").textContent = pct;
+    el("bar").style.width = pct + "%";
+
+    const content = el("content");
+    content.innerHTML = "";
+
+    if(s.type === "revealList"){
+      const box = document.createElement("div");
+      box.className = "grid2";
+      s.items.forEach((it, i2)=>{
+        const r = document.createElement("div");
+        r.className = "reveal";
+        r.innerHTML = `
+          <strong>✨ ${it.t}</strong>
+          <div class="hint" id="rv_${idx}_${i2}" style="display:none; white-space:pre-line">${it.d}</div>
+          <button style="margin-top:8px" data-reveal="rv_${idx}_${i2}">Reveal / Hide</button>
+        `;
+        box.appendChild(r);
+      });
+      content.appendChild(box);
+      wireRevealButtons(content);
+      return;
+    }
+
+    if(s.type === "panels"){
+      const box = document.createElement("div");
+      box.className = "grid2";
+      s.panels.forEach(p=>{
+        const d = document.createElement("div");
+        d.className = "panel";
+        d.innerHTML = `<strong>🟣 ${p.title}</strong><div class="hint">${p.body}</div>`;
+        box.appendChild(d);
+      });
+      content.appendChild(box);
+      return;
+    }
+
+    if(s.type === "prompts"){
+      const d = document.createElement("div");
+      d.className = "panel";
+      d.innerHTML = `<strong>🗣️ Discussion prompts</strong>
+        <ul class="list">${s.prompts.map(x=>`<li>${x}</li>`).join("")}</ul>`;
+      content.appendChild(d);
+      return;
+    }
+
+    if(s.type === "reveal+mini"){
+      const r = document.createElement("div");
+      r.className = "reveal";
+      r.innerHTML = `
+        <strong>📌 ${s.reveal.head}</strong>
+        <div class="hint" id="def_${idx}" style="display:none">${s.reveal.body}</div>
+        <button style="margin-top:8px" data-reveal="def_${idx}">Reveal / Hide</button>
+      `;
+      content.appendChild(r);
+
+      const p = document.createElement("div");
+      p.className = "panel";
+      p.innerHTML = `<strong>✍️ Quick write</strong><div class="hint">${s.miniPrompt}</div>`;
+      content.appendChild(p);
+
+      wireRevealButtons(content);
+      return;
+    }
+
+    if(s.type === "reveal+quiz"){
+      const r = document.createElement("div");
+      r.className = "reveal";
+      r.innerHTML = `
+        <strong>📌 ${s.reveal.head}</strong>
+        <div class="hint" id="def_${idx}" style="display:none; white-space:pre-line">${s.reveal.body}</div>
+        <button style="margin-top:8px" data-reveal="def_${idx}">Reveal / Hide</button>
+      `;
+      content.appendChild(r);
+      wireRevealButtons(content);
+
+      content.appendChild(renderQuiz(s.quiz, idx));
+      return;
+    }
+
+    if(s.type === "quiz"){
+      content.appendChild(renderQuiz(s.quiz, idx));
+      return;
+    }
+
+    if(s.type === "quiz+alerts"){
+      s.alerts.forEach(a=>{
+        const box = document.createElement("div");
+        box.className = (a.kind === "danger") ? "danger" : "warn";
+        box.innerHTML = `<div style="font-weight:900;margin-bottom:6px">${a.kind==="danger" ? "🛑" : "🧡"} ${a.title}</div>
+                         <div class="hint">${a.body}</div>`;
+        content.appendChild(box);
+      });
+      content.appendChild(renderQuiz(s.quiz, idx));
+      return;
+    }
+
+    if(s.type === "sort"){
+      const info = document.createElement("div");
+      info.className = "reveal";
+      info.innerHTML = `<strong>🧩 Drag & sort</strong>
+        <div class="hint">Drag each reason into the best bin. (There can be overlaps — justify your choice.)</div>`;
+      content.appendChild(info);
+
+      const chipWrap = document.createElement("div");
+      chipWrap.className = "chips";
+      chipWrap.id = "chipWrap";
+
+      // Shuffle chips lightly each render
+      const shuffled = [...s.chips].sort(()=>Math.random()-0.5);
+
+      shuffled.forEach((c, i2)=>{
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        chip.draggable = true;
+        chip.dataset.cat = c.cat;
+        chip.dataset.uid = `${idx}_${i2}_${c.text.replace(/\s+/g,"_").slice(0,18)}`;
+        chip.textContent = c.text;
+        chip.addEventListener("dragstart", (e)=>{ chip.classList.add("dragging"); e.dataTransfer.setData("text/plain", chip.dataset.uid); });
+        chip.addEventListener("dragend", ()=> chip.classList.remove("dragging"));
+        chipWrap.appendChild(chip);
+      });
+      content.appendChild(chipWrap);
+
+      const bins = document.createElement("div");
+      bins.className = "bins";
+      s.bins.forEach(binName=>{
+        const b = document.createElement("div");
+        b.className = "bin";
+        b.dataset.bin = binName;
+        b.innerHTML = `<h4>📦 ${binName}</h4><div class="chips" id="bin_${idx}_${binName}"></div>`;
+        b.addEventListener("dragover", (e)=> e.preventDefault());
+        b.addEventListener("drop", (e)=>{
+          e.preventDefault();
+          const uid = e.dataTransfer.getData("text/plain");
+          const chip = [...document.querySelectorAll(".chip")].find(x=>x.dataset.uid===uid);
+          if(!chip) return;
+          document.getElementById(`bin_${idx}_${binName}`).appendChild(chip);
+          checkSort();
+        });
+        bins.appendChild(b);
+      });
+      content.appendChild(bins);
+
+      const result = document.createElement("div");
+      result.id = `sortResult_${idx}`;
+      result.className = "hint";
+      result.style.marginTop = "10px";
+      content.appendChild(result);
+
+      function checkSort(){
+        let placed = 0, correct = 0, totalChips = s.chips.length;
+        s.bins.forEach(binName=>{
+          const container = document.getElementById(`bin_${idx}_${binName}`);
+          const chips = [...container.querySelectorAll(".chip")];
+          chips.forEach(ch=>{
+            placed++;
+            if(ch.dataset.cat === binName) correct++;
+          });
+        });
+        result.textContent = `Sorted: ${placed}/${totalChips} • Correct placements (if using these categories): ${correct}`;
+      }
+      checkSort();
+      return;
+    }
+
+    if(s.type === "scale"){
+      const wrap = document.createElement("div");
+      wrap.className = "scaleWrap";
+      wrap.innerHTML = `
+        <div class="scaleTop">
+          <div>
+            <div style="font-weight:900">🎚️ Rate each reason</div>
+            <div class="hint">0 = bad reason • 5 = okay/depends • 10 = good reason</div>
+          </div>
+          <div class="scaleLegend">
+            <span class="tagMini">Legal</span>
+            <span class="tagMini">Social</span>
+            <span class="tagMini">Emotional</span>
+          </div>
+        </div>
+      `;
+      content.appendChild(wrap);
+
+      const categories = ["Legal","Social","Emotional","Not sure"];
+
+      s.reasons.forEach((r, i2)=>{
+        const card = document.createElement("div");
+        card.className = "reasonCard";
+        const savedKey = `scale_${idx}_${r.id}`;
+        const saved = JSON.parse(localStorage.getItem(savedKey) || "null") || { val: 5, cat: r.classDefault || "Not sure" };
+
+        card.innerHTML = `
+          <div class="row" style="justify-content:space-between">
+            <div style="font-weight:900">Reason ${r.id}</div>
+            <div class="badge">Score: <span id="val_${idx}_${r.id}">${saved.val}</span>/10</div>
+          </div>
+          <div class="hint" style="margin-top:8px">${r.text}</div>
+          <div style="margin-top:10px">
+            <input type="range" min="0" max="10" step="1" value="${saved.val}" id="rng_${idx}_${r.id}">
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div style="font-weight:900">Classify:</div>
+            <select id="sel_${idx}_${r.id}">
+              ${categories.map(c=>`<option ${c===saved.cat?"selected":""}>${c}</option>`).join("")}
+            </select>
+            <span class="hint">Default suggestion: <strong>${r.classDefault}</strong></span>
+          </div>
+        `;
+
+        wrap.appendChild(card);
+
+        const rng = card.querySelector(`#rng_${idx}_${r.id}`);
+        const valEl = card.querySelector(`#val_${idx}_${r.id}`);
+        const sel = card.querySelector(`#sel_${idx}_${r.id}`);
+
+        const persist = ()=>{
+          localStorage.setItem(savedKey, JSON.stringify({ val: Number(rng.value), cat: sel.value }));
+        };
+
+        rng.addEventListener("input", ()=>{
+          valEl.textContent = rng.value;
+          persist();
+        });
+        sel.addEventListener("change", persist);
+      });
+
+      const tip = document.createElement("div");
+      tip.className = "panel";
+      tip.innerHTML = `<strong>🧠 Discussion move</strong>
+        <div class="hint">Ask pupils to pick one reason they rated low/high and explain their reasoning. Emphasise respectful language and “it depends” thinking.</div>`;
+      content.appendChild(tip);
+
+      return;
+    }
+  }
+
+  function wireRevealButtons(root){
+    [...root.querySelectorAll("button[data-reveal]")].forEach(btn=>{
+      btn.onclick = ()=>{
+        const id = btn.getAttribute("data-reveal");
+        const target = document.getElementById(id);
+        if(!target) return;
+        target.style.display = (target.style.display === "none") ? "block" : "none";
+      };
+    });
+  }
+
+  function renderQuiz(quiz, slideIndex){
+    const wrap = document.createElement("div");
+    wrap.className = "quiz";
+
+    quiz.forEach((qq, qi)=>{
+      const q = document.createElement("div");
+      q.className = "q";
+      q.innerHTML = `<div class="qTitle">❓ ${qq.q}</div>`;
+
+      const opts = document.createElement("div");
+      opts.className = "opts";
+
+      const fb = document.createElement("div");
+      fb.className = "feedback";
+      fb.innerHTML = `<div class="label">Explanation</div><div class="text">${qq.why}</div>`;
+
+      qq.opts.forEach((o, oi)=>{
+        const b = document.createElement("button");
+        b.className = "opt";
+        b.textContent = o;
+        b.onclick = ()=>{
+          if(q.dataset.answered) return;
+          q.dataset.answered = "1";
+
+          const correct = (oi === qq.answer);
+          if(correct){
+            b.classList.add("correct");
+            score++;
+          } else {
+            b.classList.add("wrong");
+            const correctBtn = opts.querySelectorAll(".opt")[qq.answer];
+            correctBtn.classList.add("correct");
+          }
+          el("score").textContent = score;
+          fb.classList.add("show");
+        };
+        opts.appendChild(b);
+      });
+
+      q.appendChild(opts);
+      q.appendChild(fb);
+      wrap.appendChild(q);
+    });
+
+    return wrap;
+  }
+
+  function go(delta){
+    idx = clamp(idx + delta, 0, slides.length - 1);
+    render();
+  }
+
+  el("prev").onclick = ()=>go(-1);
+  el("next").onclick = ()=>go(1);
+  el("reset").onclick = ()=>{
+    score = 0;
+    el("score").textContent = score;
+    // keep scale localStorage (often helpful), but you can clear if you prefer:
+    // localStorage.clear();
+    render();
+  };
+
+  window.addEventListener("keydown",(e)=>{
+    if(e.key === "ArrowLeft") go(-1);
+    if(e.key === "ArrowRight") go(1);
+    if(e.key.toLowerCase() === "r") el("reset").click();
+  });
+
+  render();
+</script>
+</body>
+</html>
